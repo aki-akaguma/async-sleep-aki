@@ -1,0 +1,32 @@
+[package]
+name = "async-sleep-aki"
+version = "0.1.0"
+authors = ["aki <aki.akaguma@hotmail.com>"]
+edition = "2021"
+description = """
+It provides simple `async_sleep()` that work well in both web browsers and native applications.
+"""
+keywords = ["webapp", "javascript", "desktop", "android"]
+categories = [ "api-bindings", "asynchronous", "wasm", "web-programming" ]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+rust-version = "1.90.0"
+repository = "https://github.com/aki-akaguma/broinfo"
+
+[dependencies]
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+tokio = { version="1.49", features =["time"] }
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+gloo-timers = { version = "0.3", features = ["futures"] }
+
+
+[dev-dependencies]
+
+[features]
+default = []
+
+[lib]
+name = "async_sleep_aki"
+path = "src/lib.rs"
