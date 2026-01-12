@@ -15,8 +15,27 @@ This can be used in the `dioxus` application.
 Just call `async_sleep()` on the frontend or backend.
 
 ```rust
-use async_sleep_aki::{async_sleep, Duration};
-async_sleep(Duration::from_millis(100)).await;
+async_sleep(100).await;
+```
+
+In dioxus component:
+
+```rust
+use dioxus::prelude::*;
+use async_sleep_aki::delayed_call;
+
+#[component]
+fn func() -> Element {
+    let mut is_loading = use_signal(|| false);
+    use_effect(move ||{
+        spawn(delayed_call(2000, async move {
+            if *is_loading.read() {
+                is_loading.set(false);
+            }
+        }));
+    });
+    rsx!{ div{} }
+}
 ```
 
 ### Implementation

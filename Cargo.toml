@@ -15,14 +15,18 @@ repository = "https://github.com/aki-akaguma/broinfo"
 
 [dependencies]
 
-[target.'cfg(not(target_family = "wasm"))'.dependencies]
+## for non browser
+[target.'cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))'.dependencies]
 tokio = { version="1.49", features =["time"] }
 
-[target.'cfg(target_family = "wasm")'.dependencies]
+## for browser
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dependencies]
 gloo-timers = { version = "0.3", features = ["futures"] }
 
 
 [dev-dependencies]
+dioxus = { version = "0.7.2" }
+
 
 [features]
 default = []
