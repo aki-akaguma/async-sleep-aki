@@ -14,6 +14,7 @@ rust-version = "1.90.0"
 repository = "https://github.com/aki-akaguma/async-sleep-aki"
 
 [dependencies]
+dioxus-core = { version="0.7.3", optional=true }
 
 ## for non browser
 [target.'cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))'.dependencies]
@@ -29,7 +30,8 @@ dioxus = { version = "0.7.2" }
 
 
 [features]
-default = []
+default = ["dx"]
+dx = ["dep:dioxus-core"]
 
 [lib]
 name = "async_sleep_aki"

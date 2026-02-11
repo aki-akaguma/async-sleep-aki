@@ -32,6 +32,26 @@ fn func() -> Element {
 }
 ```
 
+```rust
+use dioxus::prelude::*;
+use async_sleep_aki::postponed_call;
+
+#[component]
+fn func() -> Element {
+    let mut postponed = use_signal(|| postponed_call(10, move || {}));
+    let mut is_loading = use_signal(|| false);
+    let rsrc = use_resource(move || async move {
+        let t = postponed_call(2000, move || {
+            if *is_loading.read() {
+                is_loading.set(false);
+            }
+        });
+        let _ = postponed.replace(t);
+    });
+    rsx!{ div{} }
+}
+```
+
 ## Implementation
 If `target` is `wasm32-unknown-unknown`, calls `gloo_timers::future::sleep()`, otherwise calls `tokio::time::sleep()`.
 */
@@ -73,4 +93,81 @@ where
 {
     async_sleep(delay).await;
     f.await;
+}
+
+#[cfg(feature = "dx")]
+pub struct PostponedCall {
+    // for non browser
+    #[cfg(not(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    )))]
+    _a: dioxus_core::Task,
+
+    // for browser
+    #[cfg(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    ))]
+    _a: gloo_timers::callback::Timeout,
+}
+
+#[cfg(feature = "dx")]
+// for non browser
+#[cfg(not(all(
+    target_arch = "wasm32",
+    target_vendor = "unknown",
+    target_os = "unknown"
+)))]
+impl Drop for PostponedCall {
+    fn drop(&mut self) {
+        let r = self._a;
+        self._a = dioxus_core::spawn(async move {});
+        r.cancel();
+    }
+}
+
+/// Create a Task that will call the `callback` after `millis` milliseconds.
+///
+/// When dropped, the task is canceled.
+///
+/// If `millis` is a negative number, it is treated as `0` seconds.
+///
+/// In a web browser, this is implemented using the `setTimeout()` function of `javascript`, so it is subject to [the same restrictions].
+///
+/// [the same restrictions]: https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout#maximum_delay_value
+#[cfg(feature = "dx")]
+pub fn postponed_call<F>(millis: i32, callback: F) -> PostponedCall
+where
+    F: 'static + FnOnce(),
+{
+    let delay = if millis >= 0 { millis as u64 } else { 0 };
+
+    // for non browser
+    #[cfg(not(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    )))]
+    {
+        let dur = std::time::Duration::from_millis(delay);
+        let a = dioxus_core::spawn(async move {
+            tokio::time::sleep(dur).await;
+            callback();
+        });
+        PostponedCall { _a: a }
+    }
+
+    // for browser
+    #[cfg(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    ))]
+    {
+        let a = gloo_timers::callback::Timeout::new(millis as u32, callback);
+        PostponedCall { _a: a }
+    }
 }
