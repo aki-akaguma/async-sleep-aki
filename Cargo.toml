@@ -1,6 +1,6 @@
 [package]
 name = "async-sleep-aki"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 edition = "2021"
 description = """
@@ -14,19 +14,19 @@ rust-version = "1.90.0"
 repository = "https://github.com/aki-akaguma/async-sleep-aki"
 
 [dependencies]
-dioxus-core = { version="0.7.3", optional=true }
+dioxus-core = { version="0.7.4", optional=true }
 
 ## for non browser
 [target.'cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))'.dependencies]
-tokio = { version="1.49", features =["time"] }
+tokio = { version="1.51", features =["time"] }
 
 ## for browser
 [target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dependencies]
-gloo-timers = { version = "0.3", features = ["futures"] }
+gloo-timers = { version = "0.4", features = ["futures"] }
 
 
 [dev-dependencies]
-dioxus = { version = "0.7.2" }
+dioxus = { version = "0.7.4" }
 
 
 [features]
